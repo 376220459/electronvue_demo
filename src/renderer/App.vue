@@ -12,4 +12,9 @@
 
 <style>
   /* CSS */
+  #app{
+    height: 100%;
+    min-height: 600px;
+    min-width: 1000px;
+  }
 </style>

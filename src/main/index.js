@@ -1,9 +1,5 @@
 import { app, BrowserWindow } from 'electron'
 
-/**
- * Set `__static` path to static files in production
- * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
- */
 if (process.env.NODE_ENV !== 'development') {
   global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
@@ -18,7 +14,7 @@ function createWindow () {
    * Initial window options
    */
   mainWindow = new BrowserWindow({
-    height: 563,
+    height: 600,
     useContentSize: true,
     width: 1000
   })
@@ -29,7 +25,6 @@ function createWindow () {
     mainWindow = null
   })
 }
-
 app.on('ready', createWindow)
 
 app.on('window-all-closed', () => {
@@ -45,37 +40,57 @@ app.on('activate', () => {
 })
 
 const ipc = require('electron').ipcMain
+let me;
+let connections = [];
+const dgram = require('dgram'),
+    server = dgram.createSocket("udp4"),
+    multicastAddr = '224.100.100.100';
 
-ipc.on('notice-main', function (event, arg) {
-  if(arg === '01'){
-    const message = `来自渲染进程: 发来了 01 信号`
-    console.log(message)
-  }
-  event.sender.send('notice-vice', '主进程完成任务')
+server.on("error",err=>{
+    console.log('socket已关闭');
 })
 
+server.on('error',(err)=>{
+    console.log(err);
+});
 
-const dgram = require('dgram')
-
-const server = dgram.createSocket('udp4')
-
-server.on('error',err=>{
-    console.log(err)
-    server.close()
+server.on("listening",()=>{
+    console.log("socket正在监听中.....");
+    server.addMembership(multicastAddr);
+    server.setMulticastTTL(128);
 })
 
 server.on('message',(msg,rinfo)=>{
-    console.log(`message: ${msg}`)
-    console.log(`rinfo: ${rinfo}`)
+    // console.log(`msg: ${msg}`)
+    if(msg == 'access'){
+      if(connections.indexOf(rinfo.address + ':' + rinfo.port) == -1){
+        connections.push(rinfo.address + ':' + rinfo.port)
+      }
+      me.send('notice-vice', {
+        status: '1',//返回列表
+        msg: '返回列表',
+        connections: connections
+      })
+    }else if(msg == 'get'){
+    // }else if(msg === 'get' && rinfo.address !== server.address){
+      server.send('access','8066',multicastAddr);
+    }
 })
 
-server.on('listening',()=>{
-    const address = server.address()
-    console.log(`address: ${address.address}:${address.port}`)
+server.bind('8066')
+
+ipc.on('notice-main',(event, arg)=>{
+  // if(arg === '01'){
+    server.send('get','8066',multicastAddr)
+    me = event.sender
+    me.send('notice-vice', {
+      status: '0',//返回列表
+      msg: '正在获取列表...'
+    })
+  // }
 })
 
-server.on('close',()=>{
-    console.log('closed')
-})
 
-server.bind('8888','127.0.0.1')
+
+
+
