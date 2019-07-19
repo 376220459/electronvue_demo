@@ -1,7 +1,7 @@
 <template>
   <div class="whole">
-    <div class="draw" :style="{display:drawShow}">
-      <canvas id="canvas" @mousedown="start($event)" @mouseup="stop" @mousemove="putPoint($event)"></canvas>
+    <div id="draw" class="draw" :style="{display:drawShow}">
+      <canvas id="canvas" @mousedown="start($event);start2($event)" @mouseup="stop();stop2()" @mousemove="putPoint($event);putPoint2($event)"></canvas>
     </div>
 
     <div class="title">HELLO CVTE</div>
@@ -21,40 +21,43 @@
 </template>
 
 <script>
-// import { constants } from 'fs';
 const ipc = require('electron').ipcRenderer
 
-let cxt;
-// var canvas=document.getElementById("canvas");
-// console.log(canvas)
-// var cxt=canvas.getContext("2d");
-// var radius=5;
-// var falge=false;
-// cxt.lineWidth=10;
+let cxt
 
-
+window.addEventListener('resize',function(){
+  let canvas = document.getElementById('canvas');
+  let draw = document.getElementById('draw')
+  // canvas.width = draw.offsetWidth;
+  // canvas.height = draw.offsetHeight;
+},false)
 
 export default {
   data() {
     return {
       connections: [],
       flage: false,
-      drawShow: ''
+      drawShow: '',
+      otherAddress: ''
     }
   },
   methods: {
     getConnections(){
-      ipc.send('notice-main', '01')
+      ipc.send('notice-main', {
+        status: '01'
+      })
     },
     connectTo(address){
       address = address.slice(0,-5)
+      this.otherAddress = address
       let canvas = document.getElementById('canvas')
-      canvas.width=window.innerWidth;
-      canvas.height=window.innerHeight;
+      canvas.width = 600
+      canvas.height = 600
+      // canvas.width=window.innerWidth
+      // canvas.height=window.innerHeight
       cxt = document.getElementById('canvas').getContext("2d")
-      cxt.lineWidth=10
+      // cxt.lineWidth=10
       this.drawShow = 'block'
-      // console.log(address)
     },
     putPoint(e){
       if(this.falge){
@@ -62,19 +65,55 @@ export default {
         cxt.lineTo(e.clientX, e.clientY);
         cxt.stroke();
         cxt.beginPath();
-        cxt.arc(e.clientX, e.clientY, 5, 0, 360, false);
+        // cxt.arc(e.clientX, e.clientY, 5, 0, 360, false);
         cxt.fill();
         cxt.beginPath();
         cxt.moveTo(e.clientX, e.clientY);
+
+        // ipc.send('notice-main', {
+        //   status: 'putPoint',
+        //   e: e
+        // })
+      }
+    },
+    putPoint2(e){
+      if(this.falge){
+        ipc.send('notice-main', {
+          status: 'putPoint',
+          otherAddress: this.otherAddress,
+          e: e
+        })
       }
     },
     start(e){
       this.falge=true;
       this.putPoint(e);
+
+      // ipc.send('notice-main', {
+      //   status: 'start',
+      //   e: e
+      // })
+    },
+    start2(e){
+      ipc.send('notice-main', {
+        status: 'start',
+        otherAddress: this.otherAddress,
+        e: e
+      })
     },
     stop(){
       this.falge=false;
       cxt.beginPath();
+
+      // ipc.send('notice-main', {
+      //   status: 'stop'
+      // })
+    },
+    stop2(){
+      ipc.send('notice-main', {
+        status: 'stop',
+        otherAddress: this.otherAddress,
+      })
     }
   },
   mounted() {
@@ -85,6 +124,12 @@ export default {
           console.log(arg.msg)
           this.connections = arg.connections;
           // this.$set(this.connections,0,...arg.connections)
+        }else if(arg.status == 'start'){
+          // this.start(arg.e)
+        }else if(arg.status == 'stop'){
+          // this.stop()
+        }else if(arg.status == 'putPoint'){
+          // this.putPoint(arg.e)
         }
       })
   },
@@ -96,14 +141,21 @@ export default {
     height: 100%;
     display: flex;
     flex-direction: column;
+    position: relative;
     .draw{
       box-sizing: border-box;
-      height: 100%;
-      width: 100%;
+      height: 600px;
+      width: 600px;
       position: absolute;
+      // left: 50%;
+      // margin-left: -300px;
+      // top: 50%;
+      // margin-top: -300px;
       z-index: 2;
       display: none;
-      background: wheat;
+      canvas{
+        background: wheat;
+      }
     }
     .title{
       text-align: center;
