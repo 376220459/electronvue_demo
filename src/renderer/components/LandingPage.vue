@@ -23,7 +23,7 @@
 <script>
 const ipc = require('electron').ipcRenderer
 
-let cxt
+let cxt,cxt2
 
 window.addEventListener('resize',function(){
   let canvas = document.getElementById('canvas');
@@ -37,6 +37,7 @@ export default {
     return {
       connections: [],
       flage: false,
+      flage2: false,
       drawShow: '',
       otherAddress: ''
     }
@@ -56,6 +57,7 @@ export default {
       // canvas.width=window.innerWidth
       // canvas.height=window.innerHeight
       cxt = document.getElementById('canvas').getContext("2d")
+      cxt2 = document.getElementById('canvas').getContext("2d")
       // cxt.lineWidth=10
       this.drawShow = 'block'
     },
@@ -69,11 +71,17 @@ export default {
         cxt.fill();
         cxt.beginPath();
         cxt.moveTo(e.clientX, e.clientY);
-
-        // ipc.send('notice-main', {
-        //   status: 'putPoint',
-        //   e: e
-        // })
+      }
+    },
+    putPoint_2(e){
+      if(this.falge2){
+        cxt2.lineTo(e.clientX, e.clientY);
+        cxt2.stroke();
+        cxt2.beginPath();
+        // cxt.arc(e.clientX, e.clientY, 5, 0, 360, false);
+        cxt2.fill();
+        cxt2.beginPath();
+        cxt2.moveTo(e.clientX, e.clientY);
       }
     },
     putPoint2(e){
@@ -91,11 +99,10 @@ export default {
     start(e){
       this.falge=true;
       this.putPoint(e);
-
-      // ipc.send('notice-main', {
-      //   status: 'start',
-      //   e: e
-      // })
+    },
+    start_2(e){
+      this.falge2=true;
+      this.putPoint_2(e);
     },
     start2(e){
       ipc.send('notice-main', {
@@ -110,10 +117,10 @@ export default {
     stop(){
       this.falge=false;
       cxt.beginPath();
-
-      // ipc.send('notice-main', {
-      //   status: 'stop'
-      // })
+    },
+    stop_2(){
+      this.falge2=false;
+      cxt2.beginPath();
     },
     stop2(){
       ipc.send('notice-main', {
@@ -131,11 +138,11 @@ export default {
           this.connections = arg.connections;
           // this.$set(this.connections,0,...arg.connections)
         }else if(arg.status == 'start'){
-          this.start(arg.e)
+          this.start_2(arg.e)
         }else if(arg.status == 'stop'){
-          this.stop()
+          this.stop_2()
         }else if(arg.status == 'putPoint'){
-          this.putPoint(arg.e)
+          this.putPoint_2(arg.e)
         }
       })
   },
