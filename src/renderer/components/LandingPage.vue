@@ -81,7 +81,10 @@ export default {
         ipc.send('notice-main', {
           status: 'putPoint',
           otherAddress: this.otherAddress,
-          e: e
+          e: {
+            clientX: e.clientX,
+            clientY: e.clientY
+          }
         })
       }
     },
@@ -98,7 +101,10 @@ export default {
       ipc.send('notice-main', {
         status: 'start',
         otherAddress: this.otherAddress,
-        e: e
+        e: {
+          clientX: e.clientX,
+          clientY: e.clientY
+        }
       })
     },
     stop(){
@@ -125,11 +131,11 @@ export default {
           this.connections = arg.connections;
           // this.$set(this.connections,0,...arg.connections)
         }else if(arg.status == 'start'){
-          // this.start(arg.e)
+          this.start(arg.e)
         }else if(arg.status == 'stop'){
-          // this.stop()
+          this.stop()
         }else if(arg.status == 'putPoint'){
-          // this.putPoint(arg.e)
+          this.putPoint(arg.e)
         }
       })
   },

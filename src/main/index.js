@@ -40,6 +40,18 @@ app.on('activate', () => {
   }
 })
 
+const interfaces = require('os').networkInterfaces(); // 在开发环境中获取局域网中的本机iP地址
+let IPAddress = '';
+for(var devName in interfaces){  
+  var iface = interfaces[devName];  
+  for(var i=0;i<iface.length;i++){  
+        var alias = iface[i];  
+        if(alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal){  
+          IPAddress = alias.address;  
+        }  
+  }  
+}
+
 const ipc = require('electron').ipcMain
 let me;
 let connections = [];
@@ -73,12 +85,12 @@ server.on('message',(msg,rinfo)=>{
         connections: connections
       })
     // }else if(JSON.parse(msg).status == 'get'){
-    }else if(JSON.parse(msg).status === 'get' && rinfo.address !== server.address){
+    }else if(JSON.parse(msg).status == 'get' && rinfo.address !== IPAddress){
       server.send(JSON.stringify({
         status: 'access'
-      }),'8066',multicastAddr);
+      }),'8066',rinfo.address);
     }else if(JSON.parse(msg).status == 'start'){
-      // console.log('start')
+      console.log('start')
       
       me.send('notice-vice', {
         status: 'start',
@@ -86,14 +98,14 @@ server.on('message',(msg,rinfo)=>{
         e: JSON.parse(msg).e
       })
     }else if(JSON.parse(msg).status == 'stop'){
-      // console.log('stop')
+      console.log('stop')
       
       me.send('notice-vice', {
         status: 'stop',
         msg: 'stop'
       })
     }else if(JSON.parse(msg).status == 'putPoint'){
-      // console.log('putPoint')
+      console.log('putPoint')
       
       me.send('notice-vice', {
         status: 'putPoint',
