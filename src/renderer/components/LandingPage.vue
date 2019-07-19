@@ -5,7 +5,7 @@
     </div>
 
     <div class="title">HELLO CVTE</div>
-    <hr>
+    <hr> 
     <main>
       <div class="list">
         <button class="get-button" @click="getConnections">获取当前用户</button>
@@ -97,6 +97,9 @@ export default {
       }
     },
     start(e){
+      this.stop()
+      this.stop_2()
+      
       this.falge=true;
       this.putPoint(e);
     },
