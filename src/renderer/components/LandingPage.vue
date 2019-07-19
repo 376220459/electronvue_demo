@@ -1,5 +1,9 @@
 <template>
   <div class="whole">
+    <div class="draw" :style="{display:drawShow}">
+      <canvas id="canvas" @mousedown="start($event)" @mouseup="stop" @mousemove="putPoint($event)"></canvas>
+    </div>
+
     <div class="title">HELLO CVTE</div>
     <hr>
     <main>
@@ -12,18 +16,30 @@
           </li>
         </ul>
       </div>
-      <div class="draw"></div>
     </main>
   </div>
 </template>
 
 <script>
-import { constants } from 'fs';
-  const ipc = require('electron').ipcRenderer
+// import { constants } from 'fs';
+const ipc = require('electron').ipcRenderer
+
+let cxt;
+// var canvas=document.getElementById("canvas");
+// console.log(canvas)
+// var cxt=canvas.getContext("2d");
+// var radius=5;
+// var falge=false;
+// cxt.lineWidth=10;
+
+
+
 export default {
   data() {
     return {
-      connections: []
+      connections: [],
+      flage: false,
+      drawShow: ''
     }
   },
   methods: {
@@ -32,7 +48,33 @@ export default {
     },
     connectTo(address){
       address = address.slice(0,-5)
-      console.log(address)
+      let canvas = document.getElementById('canvas')
+      canvas.width=window.innerWidth;
+      canvas.height=window.innerHeight;
+      cxt = document.getElementById('canvas').getContext("2d")
+      cxt.lineWidth=10
+      this.drawShow = 'block'
+      // console.log(address)
+    },
+    putPoint(e){
+      if(this.falge){
+        console.log(e)
+        cxt.lineTo(e.clientX, e.clientY);
+        cxt.stroke();
+        cxt.beginPath();
+        cxt.arc(e.clientX, e.clientY, 5, 0, 360, false);
+        cxt.fill();
+        cxt.beginPath();
+        cxt.moveTo(e.clientX, e.clientY);
+      }
+    },
+    start(e){
+      this.falge=true;
+      this.putPoint(e);
+    },
+    stop(){
+      this.falge=false;
+      cxt.beginPath();
     }
   },
   mounted() {
@@ -54,6 +96,15 @@ export default {
     height: 100%;
     display: flex;
     flex-direction: column;
+    .draw{
+      box-sizing: border-box;
+      height: 100%;
+      width: 100%;
+      position: absolute;
+      z-index: 2;
+      display: none;
+      background: wheat;
+    }
     .title{
       text-align: center;
       color: skyblue;
@@ -75,10 +126,6 @@ export default {
         li{
           list-style-type: square;
         }
-      }
-      .draw{
-        box-sizing: border-box;
-        width: 80%;
       }
     }
   }
