@@ -57,7 +57,7 @@ export default {
       // canvas.width=window.innerWidth
       // canvas.height=window.innerHeight
       cxt = document.getElementById('canvas').getContext("2d")
-      cxt2 = document.getElementById('canvas').getContext("2d")
+      // cxt2 = document.getElementById('canvas').getContext("2d")
       // cxt.lineWidth=10
       this.drawShow = 'block'
     },
@@ -73,17 +73,17 @@ export default {
         cxt.moveTo(e.clientX, e.clientY);
       }
     },
-    putPoint_2(e){
-      if(this.falge2){
-        cxt2.lineTo(e.clientX, e.clientY);
-        cxt2.stroke();
-        cxt2.beginPath();
-        // cxt.arc(e.clientX, e.clientY, 5, 0, 360, false);
-        cxt2.fill();
-        cxt2.beginPath();
-        cxt2.moveTo(e.clientX, e.clientY);
-      }
-    },
+    // putPoint_2(e){
+    //   if(this.falge2){
+    //     cxt2.lineTo(e.clientX, e.clientY);
+    //     cxt2.stroke();
+    //     cxt2.beginPath();
+    //     // cxt.arc(e.clientX, e.clientY, 5, 0, 360, false);
+    //     cxt2.fill();
+    //     cxt2.beginPath();
+    //     cxt2.moveTo(e.clientX, e.clientY);
+    //   }
+    // },
     putPoint2(e){
       if(this.falge){
         ipc.send('notice-main', {
@@ -98,15 +98,15 @@ export default {
     },
     start(e){
       this.stop()
-      this.stop_2()
-      
+      // this.stop_2()
+
       this.falge=true;
       this.putPoint(e);
     },
-    start_2(e){
-      this.falge2=true;
-      this.putPoint_2(e);
-    },
+    // start_2(e){
+    //   this.falge2=true;
+    //   this.putPoint_2(e);
+    // },
     start2(e){
       ipc.send('notice-main', {
         status: 'start',
@@ -121,10 +121,10 @@ export default {
       this.falge=false;
       cxt.beginPath();
     },
-    stop_2(){
-      this.falge2=false;
-      cxt2.beginPath();
-    },
+    // stop_2(){
+    //   this.falge2=false;
+    //   cxt2.beginPath();
+    // },
     stop2(){
       ipc.send('notice-main', {
         status: 'stop',
@@ -141,11 +141,14 @@ export default {
           this.connections = arg.connections;
           // this.$set(this.connections,0,...arg.connections)
         }else if(arg.status == 'start'){
-          this.start_2(arg.e)
+          this.start(arg.e)
+          // this.start_2(arg.e)
         }else if(arg.status == 'stop'){
-          this.stop_2()
+          this.stop()
+          // this.stop_2()
         }else if(arg.status == 'putPoint'){
-          this.putPoint_2(arg.e)
+          this.putPoint(arg.e)
+          // this.putPoint_2(arg.e)
         }
       })
   },
